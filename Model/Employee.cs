@@ -1,5 +1,15 @@
 ﻿namespace EmployeeManagement.Model
 {
+
+    
+    public static class UserRoles
+    {
+        public const string MANAGER = "MANAGER";
+        public const string EMPLOYEE = "EMPLOYEE";
+    }
+
+
+
     public class Employee
     {
 

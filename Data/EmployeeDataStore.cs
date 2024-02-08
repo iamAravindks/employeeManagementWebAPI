@@ -85,6 +85,25 @@ namespace EmployeeManagement.Data
             return null;
         }
 
+        public EmployeeFullProfileDto FindEmployee(System.Predicate<Employee> predicate)
+        {
+            var employee =  _employees.Find(predicate);
+            if(employee != null)
+            {
+                return new EmployeeFullProfileDto
+                {
+                    Id = employee.Id,
+                    Name = employee.Name,
+                    Position = employee.Position,
+                    ManagerId = employee.ManagerId,
+                    Email = employee.Email,
+                    IsManager = employee.IsManager,
+                    LeaveRequests = employee.LeaveRequests,
+                };
+            }
+            return null;
+        }
+
         //DELETE Employee 
         public void DeleteEmployee(int employeeId)
         {
@@ -101,7 +120,20 @@ namespace EmployeeManagement.Data
             var employee = _employees.FirstOrDefault(e => e.Id == employeeId);
             if (employee != null)
             {
-                employee.LeaveRequests.Add(leaveRequest);
+                bool hasDuplicate = employee.LeaveRequests.Any(lr =>
+                lr.Id == leaveRequest.Id ||
+                 lr.StartDate.Date == leaveRequest.StartDate.Date || lr.EndDate.Date == leaveRequest.EndDate.Date
+                  );
+
+                if (!hasDuplicate)
+                {
+                    employee.LeaveRequests.Add(leaveRequest);
+                }
+                else
+                {
+                    // Handle duplicate leave request (e.g., throw an exception, return an error message)
+                    throw new ArgumentException("Duplicate leave request detected.");
+                }
             }
 
         }
@@ -113,6 +145,10 @@ namespace EmployeeManagement.Data
             if (employee != null)
             {
                 var leaveRequest = employee.LeaveRequests.FirstOrDefault(lr => lr.Id == leaveRequestId);
+                if(leaveRequest == null)
+                {
+                    throw new ArgumentException("Wrong leave Id");
+                }
                 if (leaveRequest != null)
                 {
                     leaveRequest.Status = newStatus;
