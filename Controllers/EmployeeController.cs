@@ -89,8 +89,7 @@ namespace EmployeeManagement.Controllers
 
 
         //!TODO : Need Authorization for manager
-
-       
+        [Authorize]
         [HttpGet("/managers/{managerId}/reporters")]
         public IActionResult GetManagerReportees([FromRoute]int managerId) {
             var employess = dataStore.GetReportersForManager(managerId);
