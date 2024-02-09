@@ -70,7 +70,7 @@ namespace EmployeeManagement.Controllers
         }
 
 
-        [Authorize(Roles =$"{UserRoles.EMPLOYEE},{UserRoles.ADMIN}")]
+        [Authorize(Roles =$"{UserRoles.EMPLOYEE},{UserRoles.MANAGER}")]
         [HttpPost("/employee/leaveapply")]
         public IActionResult ApplyLeave( [FromBody] LeaveRequestDto leaveRequestDto)
         {
@@ -104,23 +104,40 @@ namespace EmployeeManagement.Controllers
         }
 
 
-        //!TODO : Need Authorization for manager
-        [Authorize]
-        [HttpGet("/managers/{managerId}/reporters")]
-        public IActionResult GetManagerReportees([FromRoute]int managerId) {
-            var employess = dataStore.GetReportersForManager(managerId);
-            return Ok(employess);
+        [Authorize(Roles = $"{UserRoles.ADMIN},{UserRoles.MANAGER}")]
+        [HttpGet("/managers/reporters")]
+        public IActionResult GetManagerReportees() {
+            try
+            {
+                if (!TryGetUserIdFromClaims(out int id))
+                {
+                    return BadRequest("Invalid or missing user ID claim");
+                }
+                var employess = dataStore.GetReportersForManager(id);
+                return Ok(employess);
+
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         //!TODO : Need Authorization for manager
 
-        [HttpPut("/managers/{managerId}/reportees/{reporteeId}/leaveapprove/{leaveId}")]
-        public IActionResult ApproveLeave([FromRoute] int managerId, [FromRoute] int reporteeId, [FromRoute] int leaveId)
+        [Authorize(Roles =$"{UserRoles.MANAGER},{UserRoles.ADMIN}")]
+        [HttpPut("/managers/reportees/{reporteeId}/leaveapprove/{leaveId}")]
+        public IActionResult ApproveLeave( [FromRoute] int reporteeId, [FromRoute] int leaveId)
         {
             try
             {
-                bool isRepoortee = dataStore.GetReportersForManager(managerId).Any(e => e.ManagerId == managerId);
+                if (!TryGetUserIdFromClaims(out int id))
+                {
+                    return BadRequest("Invalid or missing user ID claim");
+                }
 
+                bool isRepoortee = dataStore.FindEmployee(reporteeId)?.ManagerId==id;
+                
                 if (!isRepoortee)
                 {
                     return BadRequest("Wrong manager or wrong reportee");

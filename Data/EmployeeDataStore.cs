@@ -207,7 +207,7 @@ namespace EmployeeManagement.Data
             EmployeeDataStore dataStore = Instance;
             var employee1 = new Employee { Id = 1, Name = "John Doe", Position = "Software Engineer", ManagerId = 3, Email = "john@example.com", Password = "password1" };
             var employee2 = new Employee { Id = 2, Name = "Alice Smith", Position = "UI Designer", ManagerId = 3, Email = "alice@example.com", Password = "password2" };
-            var employee3 = new Employee { Id = 3, Name = "Bob Johnson", Position = "Project Manager", Role = UserRoleEnum.MANAGER, Email = "bob@example.com", Password = "password3" };
+            var employee3 = new Employee { Id = 3, Name = "Bob Johnson", Position = "Project Manager", Role = UserRoleEnum.MANAGER,ManagerId=111, Email = "bob@example.com", Password = "password3" };
             var employee4 = new Employee { Id = 4, Name = "Emily Brown", Position = "Software Engineer", ManagerId = 3, Email = "emily@example.com", Password = "password4" };
             var employee5 = new Employee { Id = 5, Name = "Michael Davis", Position = "Software Engineer", ManagerId = 4, Email = "michael@example.com", Password = "password5" };
             var employee6 = new Employee { Id = 111, Name = "Super Admin", Position = "Admin", Email = "admin@example.com", Role = UserRoleEnum.ADMIN,Password = "password6" };

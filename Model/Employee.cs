@@ -29,11 +29,6 @@
             {
                 throw new ArgumentException("Id cannot be 111 for roles other than ADMIN.");
             }
-            // Set default manager ID if the role is MANAGER
-            if (Role == UserRoleEnum.MANAGER)
-            {
-                ManagerId = 111; //super admin id
-            }
         }
         public int Id { get; set; }
         public string Name { get; set; } = null!;
