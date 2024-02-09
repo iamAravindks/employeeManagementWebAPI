@@ -1,7 +1,6 @@
 ﻿using EmployeeManagement.Data;
 using EmployeeManagement.Data.DTO;
 using EmployeeManagement.Model;
-using EmployeeManagement.Utils;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +14,8 @@ namespace EmployeeManagement.Controllers
     public class EmployeeController : ControllerBase
     {
         EmployeeDataStore dataStore;
-        IAuthHelper _authHelper;
-        public EmployeeController(IAuthHelper authHelper)
+        public EmployeeController()
         {
-            _authHelper = authHelper;
             dataStore = EmployeeDataStore.Instance;
             dataStore.Seeder();
         }
@@ -33,8 +30,27 @@ namespace EmployeeManagement.Controllers
                 return Unauthorized("Invalid credentils");
             }
             var role = employee.Role==UserRoleEnum.ADMIN? UserRoles.ADMIN : (employee.Role == UserRoleEnum.MANAGER ? UserRoles.MANAGER : UserRoles.EMPLOYEE);
-             setCookie($"{employee.Id}", role);
+            var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, $"{employee.Id}"),
+            new Claim(ClaimTypes.Role, role)
+
+        };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            HttpContext.SignInAsync(
+                                CookieAuthenticationDefaults.AuthenticationScheme,
+                                new ClaimsPrincipal(claimsIdentity)
+                                 );
             return Ok(employee);
+        }
+
+        [HttpPost("/employee/logout")]
+        public IActionResult Logout()
+        {
+            HttpContext.Response.Cookies.Delete("xyz-cookie-emp");
+             HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return Ok();
         }
 
         [Authorize(Roles = $"{UserRoles.MANAGER},{UserRoles.ADMIN}")]
@@ -52,6 +68,11 @@ namespace EmployeeManagement.Controllers
                 }
 
                 var createdEmployee = dataStore.AddEmployee(employee);
+                if(createdEmployee == null)
+                {
+                    return BadRequest("Employee creation");
+
+                }
                 return Ok(employee);
                 
             }catch (Exception ex)
@@ -176,14 +197,7 @@ namespace EmployeeManagement.Controllers
         }
 
 
-        private void setCookie(string id,string role)
-        {
-            var claimsIdentity = _authHelper.setClaimsIdForCookie(id, role);
-             HttpContext.SignInAsync(
-                                 CookieAuthenticationDefaults.AuthenticationScheme,
-                                 new ClaimsPrincipal(claimsIdentity)
-                                  );
-        }
+
 
         private bool TryGetUserIdFromClaims(out int id)
         {

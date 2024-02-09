@@ -1,4 +1,3 @@
-using EmployeeManagement.Utils;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,9 +13,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         .AddCookie(options =>
         {
             options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+            options.Cookie.Name = "xyz-cookie-emp";
         });
 
-builder.Services.AddScoped<IAuthHelper, AuthHelper>();
 
 var app = builder.Build();
 

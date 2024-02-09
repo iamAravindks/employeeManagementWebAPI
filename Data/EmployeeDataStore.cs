@@ -64,7 +64,7 @@ namespace EmployeeManagement.Data
             var IsExistingemployee = _employees.Any(e=>e.Id==employee.Id || e.Email==employee.Email);
             if (IsExistingemployee)
             {
-                throw new Exception("Duplicate entry");
+                return null;
             }
             _employees.Add(employee);
             return employee;
