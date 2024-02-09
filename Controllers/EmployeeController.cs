@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace EmployeeManagement.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("/api/v1.01")]
     [ApiController]
     public class EmployeeController : ControllerBase
     {
@@ -37,13 +37,35 @@ namespace EmployeeManagement.Controllers
             return Ok(employee);
         }
 
-        [HttpGet("/employees")]
-        public IActionResult GetAllEmployees()
-        {
-            var employess = dataStore.GetAllEmployees();
-            return Ok(employess);
+        [Authorize(Roles = $"{UserRoles.MANAGER},{UserRoles.ADMIN}")]
+        [HttpPost("/employees")]
+        public IActionResult AddEmployee([FromBody] Employee employee) {
+            try
+            {
+                if(employee == null)
+                {
+                    return BadRequest("Not enough data");
+                }
+                if(employee.Role==UserRoleEnum.ADMIN)
+                {
+                    return BadRequest("Admin creation is not permitted");
+                }
+
+                var createdEmployee = dataStore.AddEmployee(employee);
+                return Ok(employee);
+                
+            }catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
-        //!TODO : Need Authorization for employee
+
+        //[HttpGet("/employees")]
+        //public IActionResult GetAllEmployees()
+        //{
+        //    var employess = dataStore.GetAllEmployees();
+        //    return Ok(employess);
+        //}
 
         [Authorize]
         [HttpGet("/employee/profile")]
@@ -105,7 +127,7 @@ namespace EmployeeManagement.Controllers
 
 
         [Authorize(Roles = $"{UserRoles.ADMIN},{UserRoles.MANAGER}")]
-        [HttpGet("/managers/reporters")]
+        [HttpGet("/managers/manager/reportees")]
         public IActionResult GetManagerReportees() {
             try
             {

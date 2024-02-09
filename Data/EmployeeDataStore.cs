@@ -59,10 +59,18 @@ namespace EmployeeManagement.Data
             return employeesWithoutPasswords;
         }
 
-        public void AddEmployee(Employee employee)
+        public Employee AddEmployee(Employee employee)
         {
+            var IsExistingemployee = _employees.Any(e=>e.Id==employee.Id || e.Email==employee.Email);
+            if (IsExistingemployee)
+            {
+                throw new Exception("Duplicate entry");
+            }
             _employees.Add(employee);
+            return employee;
         }
+
+
         //Find an Employee
 
         public EmployeeFullProfileDto? FindEmployee(int employeeId)
