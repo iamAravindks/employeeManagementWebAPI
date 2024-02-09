@@ -4,8 +4,16 @@
     
     public static class UserRoles
     {
-        public const string MANAGER = "MANAGER";
-        public const string EMPLOYEE = "EMPLOYEE";
+        public const string MANAGER = "manager";
+        public const string EMPLOYEE = "employee";
+        public const string ADMIN = "admin";
+    }
+
+    public enum UserRoleEnum
+    {
+        MANAGER,
+        EMPLOYEE,
+        ADMIN
     }
 
 
@@ -16,6 +24,16 @@
         public Employee() {
 
             LeaveRequests = new List<LeaveRequest>();
+            // Ensure that Id cannot be 111 for roles except ADMIN
+            if (Role != UserRoleEnum.ADMIN && Id == 111)
+            {
+                throw new ArgumentException("Id cannot be 111 for roles other than ADMIN.");
+            }
+            // Set default manager ID if the role is MANAGER
+            if (Role == UserRoleEnum.MANAGER)
+            {
+                ManagerId = 111; //super admin id
+            }
         }
         public int Id { get; set; }
         public string Name { get; set; } = null!;
@@ -24,10 +42,9 @@
 
         public string Password { get; set; } = null!;
 
-        //since as per now , we didn't require any complex operations that involve with Position , just keep a string
         public string Position { get; set; } = null!;
-        public bool IsManager { get; set; } = false;
 
+        public UserRoleEnum Role { get; set; } = UserRoleEnum.EMPLOYEE;
         public int ManagerId { get; set; }
 
         public List<LeaveRequest> LeaveRequests { get; set; }

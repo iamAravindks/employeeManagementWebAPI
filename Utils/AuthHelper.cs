@@ -10,11 +10,10 @@ namespace EmployeeManagement.Utils
         {
             var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, id),
+            new Claim(ClaimTypes.NameIdentifier, id),
             new Claim(ClaimTypes.Role, role)
 
         };
-
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             return claimsIdentity;

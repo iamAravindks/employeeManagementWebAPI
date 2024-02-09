@@ -25,15 +25,15 @@ namespace EmployeeManagement.Controllers
 
         [HttpPost("/employee/login")]
 
-        public async Task<IActionResult> Login([FromBody] EmployeeLoginDto employeeLoginDto)
+        public IActionResult Login([FromBody] EmployeeLoginDto employeeLoginDto)
         {
             var employee = dataStore.FindEmployee(e => e.Email == employeeLoginDto.Email && e.Password == employeeLoginDto.password);
             if (employee == null)
             {
                 return Unauthorized("Invalid credentils");
             }
-            var role = employee.IsManager ? UserRoles.MANAGER : UserRoles.EMPLOYEE;
-            await setCookie($"{employee.Id}", role);
+            var role = employee.Role==UserRoleEnum.ADMIN? UserRoles.ADMIN : (employee.Role == UserRoleEnum.MANAGER ? UserRoles.MANAGER : UserRoles.EMPLOYEE);
+             setCookie($"{employee.Id}", role);
             return Ok(employee);
         }
 
@@ -45,24 +45,41 @@ namespace EmployeeManagement.Controllers
         }
         //!TODO : Need Authorization for employee
 
-        [HttpGet("/employees/{id}")]
-        public IActionResult GetEmployee(int id)
-        {
-            var employee = dataStore.FindEmployee(id);
-            if(employee == null)
-            {
-                return NotFound();
-            }
-            return Ok(employee);
-        }
-
-        //!TODO : Need Authorization for Employee
-
-        [HttpPost("/employee/{id}/leaveapply")]
-        public IActionResult ApplyLeave([FromRoute] int id, [FromBody] LeaveRequestDto leaveRequestDto)
+        [Authorize]
+        [HttpGet("/employee/profile")]
+        public IActionResult GetEmployee()
         {
             try
             {
+                if (!TryGetUserIdFromClaims(out int id))
+                {
+                    return BadRequest("Invalid or missing user ID claim");
+                }
+                var employee = dataStore.FindEmployee(id);
+                if (employee == null)
+                {
+                    return NotFound();
+                }
+                return Ok(employee);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [Authorize(Roles =$"{UserRoles.EMPLOYEE},{UserRoles.ADMIN}")]
+        [HttpPost("/employee/leaveapply")]
+        public IActionResult ApplyLeave( [FromBody] LeaveRequestDto leaveRequestDto)
+        {
+            try
+            {
+                if (!TryGetUserIdFromClaims(out int id))
+                {
+                    return BadRequest("Invalid or missing user ID claim");
+                }
                 var employee = dataStore.FindEmployee(id);
                 if (employee == null)
                 {
@@ -77,7 +94,6 @@ namespace EmployeeManagement.Controllers
                     ManagerId = employee.ManagerId,
                     Reason = leaveRequestDto.Reason,
                 };
-
                 dataStore.AddLeaveRequest(employee.Id, leaveRequest);
                 return Ok(employee);
             }
@@ -121,13 +137,24 @@ namespace EmployeeManagement.Controllers
         }
 
 
-        private async Task setCookie(string id,string role)
+        private void setCookie(string id,string role)
         {
             var claimsIdentity = _authHelper.setClaimsIdForCookie(id, role);
-            await HttpContext.SignInAsync(
+             HttpContext.SignInAsync(
                                  CookieAuthenticationDefaults.AuthenticationScheme,
                                  new ClaimsPrincipal(claimsIdentity)
                                   );
+        }
+
+        private bool TryGetUserIdFromClaims(out int id)
+        {
+            id = -1;
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out id))
+            {
+                return false; 
+            }
+            return true; 
         }
     }
 }

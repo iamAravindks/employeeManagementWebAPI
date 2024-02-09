@@ -18,7 +18,7 @@ namespace EmployeeManagement.Data.DTO
         [Required(ErrorMessage = "Position is required")]
         [StringLength(20, ErrorMessage = "Position must be at most 20 characters long")]
         public string Position { get; set; } = null!;
-        public bool IsManager { get; set; } = false;
+        public UserRoleEnum Role { get; set; } = UserRoleEnum.EMPLOYEE;
 
         [Required]
         public int ManagerId { get; set; }

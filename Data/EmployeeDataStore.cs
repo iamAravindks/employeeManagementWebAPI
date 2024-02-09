@@ -5,7 +5,7 @@ namespace EmployeeManagement.Data
 {
     public class EmployeeDataStore
     {
-        private static EmployeeDataStore _instance;
+        private static EmployeeDataStore _instance = default!;
 
         private static readonly object padlock = new object();
 
@@ -50,7 +50,7 @@ namespace EmployeeManagement.Data
                     Position = employee.Position,
                     ManagerId = employee.ManagerId,
                     Email = employee.Email,
-                    IsManager = employee.IsManager,
+                    Role = employee.Role,
                 };
 
                 employeesWithoutPasswords.Add(employeeWithoutPassword);
@@ -65,7 +65,7 @@ namespace EmployeeManagement.Data
         }
         //Find an Employee
 
-        public EmployeeFullProfileDto FindEmployee(int employeeId)
+        public EmployeeFullProfileDto? FindEmployee(int employeeId)
         {
             var employee=  _employees.FirstOrDefault(e => e.Id == employeeId);
 
@@ -78,14 +78,14 @@ namespace EmployeeManagement.Data
                     Position = employee.Position,
                     ManagerId = employee.ManagerId,
                     Email = employee.Email,
-                    IsManager = employee.IsManager,
+                    Role= employee.Role,
                     LeaveRequests = employee.LeaveRequests,
                 };
             }
             return null;
         }
 
-        public EmployeeFullProfileDto FindEmployee(System.Predicate<Employee> predicate)
+        public EmployeeFullProfileDto? FindEmployee(System.Predicate<Employee> predicate)
         {
             var employee =  _employees.Find(predicate);
             if(employee != null)
@@ -97,7 +97,7 @@ namespace EmployeeManagement.Data
                     Position = employee.Position,
                     ManagerId = employee.ManagerId,
                     Email = employee.Email,
-                    IsManager = employee.IsManager,
+                    Role = employee.Role,
                     LeaveRequests = employee.LeaveRequests,
                 };
             }
@@ -107,6 +107,7 @@ namespace EmployeeManagement.Data
         //DELETE Employee 
         public void DeleteEmployee(int employeeId)
         {
+            #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             Employee employeeToRemove = _employees.FirstOrDefault(e => e.Id == employeeId);
             if (employeeToRemove != null)
             {
@@ -120,6 +121,8 @@ namespace EmployeeManagement.Data
             var employee = _employees.FirstOrDefault(e => e.Id == employeeId);
             if (employee != null)
             {
+
+
                 bool hasDuplicate = employee.LeaveRequests.Any(lr =>
                 lr.Id == leaveRequest.Id ||
                  lr.StartDate.Date == leaveRequest.StartDate.Date || lr.EndDate.Date == leaveRequest.EndDate.Date
@@ -171,7 +174,7 @@ namespace EmployeeManagement.Data
                     Position = employee.Position,
                     ManagerId = employee.ManagerId,
                     Email = employee.Email,
-                    IsManager = employee.IsManager,
+                    Role = employee.Role,
                     LeaveRequests = employee.LeaveRequests,
                 };
 
@@ -204,9 +207,11 @@ namespace EmployeeManagement.Data
             EmployeeDataStore dataStore = Instance;
             var employee1 = new Employee { Id = 1, Name = "John Doe", Position = "Software Engineer", ManagerId = 3, Email = "john@example.com", Password = "password1" };
             var employee2 = new Employee { Id = 2, Name = "Alice Smith", Position = "UI Designer", ManagerId = 3, Email = "alice@example.com", Password = "password2" };
-            var employee3 = new Employee { Id = 3, Name = "Bob Johnson", Position = "Project Manager", IsManager = true, Email = "bob@example.com", Password = "password3" };
+            var employee3 = new Employee { Id = 3, Name = "Bob Johnson", Position = "Project Manager", Role = UserRoleEnum.MANAGER, Email = "bob@example.com", Password = "password3" };
             var employee4 = new Employee { Id = 4, Name = "Emily Brown", Position = "Software Engineer", ManagerId = 3, Email = "emily@example.com", Password = "password4" };
             var employee5 = new Employee { Id = 5, Name = "Michael Davis", Position = "Software Engineer", ManagerId = 4, Email = "michael@example.com", Password = "password5" };
+            var employee6 = new Employee { Id = 111, Name = "Super Admin", Position = "Admin", Email = "admin@example.com", Role = UserRoleEnum.ADMIN,Password = "password6" };
+
 
             // Add employees to the data store
             dataStore.AddEmployee(employee1);
@@ -214,6 +219,8 @@ namespace EmployeeManagement.Data
             dataStore.AddEmployee(employee3);
             dataStore.AddEmployee(employee4);
             dataStore.AddEmployee(employee5);
+            dataStore.AddEmployee(employee6);
+
 
         }
 
